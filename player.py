@@ -1,18 +1,17 @@
 import pygame
 from entity import Entity
 
-ground_h = 120
 w, h = 1200, 900
 # making sprites for the mario
-buf = pygame.image.load('data/mario_sprite.png')
+buf = pygame.image.load('data/smb_mario_sheet.png')
 buf.set_colorkey((255, 255, 255))
 frames = []
-for _ in [(0, 0, 64, 85), (79, 0, 150, 85), (165, 0, 225, 85), (240, 0, 321, 85), (256, 100, 342, 187),
+for _ in [(419, 0, 451, 31), (480, 0, 511, 31), (539, 0, 571, 31), (600, 0, 632, 31), (718, 0, 751, 31),
           (80, 101, 154, 186)]:
     cropped = pygame.Surface((_[2] - _[0], _[3] - _[1]))
     cropped.blit(buf, (0, 0), (_[0], _[1], _[2], _[3]))
     cropped.set_colorkey((0, 0, 0))
-    cropped = pygame.transform.scale(cropped, (50, 60))
+    cropped = pygame.transform.scale(cropped, (50, 50))
     frames.append(cropped)
 
 
@@ -60,27 +59,37 @@ class Player(Entity):
         if keys[pygame.K_d]:
             if self.rect.bottomright[0] <= w - w // 2:
                 self.x_speed = self.speed
+                if keys[pygame.K_LSHIFT]:
+                    self.x_speed = self.speed * 1.6
+                else:
+                    self.x_speed = self.speed
             else:
-                self.camera[0] = self.camera[0] - self.speed
+                if keys[pygame.K_LSHIFT]:
+                    self.camera[0] = self.camera[0] - self.speed * 1.6
+                else:
+                    self.camera[0] = self.camera[0] - self.speed
             self.animation(inverted=False)
         elif keys[pygame.K_a]:
             if self.rect.bottomleft[0] >= 0:
                 self.x_speed = -self.speed
+                if keys[pygame.K_LSHIFT]:
+                    self.x_speed = -self.speed * 1.6
+                else:
+                    self.x_speed = -self.speed
             self.animation(inverted=True)
+
         elif keys[pygame.K_s]:
             self.animation(seat=True)
         else:
             self.animation(stop=True)
         if self.grounded and keys[pygame.K_w]:
-            self.jump()
+            self.jump(self.jump_speed)
             self.animation(jump=True)
-        #print(self.rect)
 
-    def jump(self):
-        self.y_speed = self.jump_speed
+    def jump(self, js):
+        self.y_speed = js
         self.grounded = False
 
     def respawn(self):
         self.is_out = False
         self.life = True
-        self.rect.midbottom = (w // 2, h - ground_h)
